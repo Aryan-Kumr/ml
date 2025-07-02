@@ -9,7 +9,7 @@ from sklearn.metrics import silhouette_score
 import numpy as np
 
 # Load dataset
-df = pd.read_csv(r'C:\Users\ankit\Downloads\aryan\Mall_Customers.csv')
+df = pd.read_csv(r'Mall_Customers.csv')
 print("First 5 rows:\n", df.head())
 
 # Select features
