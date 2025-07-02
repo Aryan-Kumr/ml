@@ -1,79 +1,93 @@
 import pandas as pd
-import matplotlib
-matplotlib.use('Agg')  # Avoid Tkinter GUI errors
 import matplotlib.pyplot as plt
+from sklearn.cluster import AgglomerativeClustering
+from scipy.cluster.hierarchy import dendrogram, linkage
 from sklearn.preprocessing import StandardScaler
-from scipy.cluster.hierarchy import linkage, dendrogram
-from sklearn.cluster import AgglomerativeClustering, KMeans
-from sklearn.metrics import silhouette_score
-import numpy as np
 
-# Load dataset
-df = pd.read_csv(r'Mall_Customers.csv')
-print("First 5 rows:\n", df.head())
+df = pd.read_csv('Mall_Customers.csv')
 
-# Select features
+# two features for 2D clustering
 X = df[['Annual Income (k$)', 'Spending Score (1-100)']]
+
 scaler = StandardScaler()
 X_scaled = scaler.fit_transform(X)
 
-# ---------------- AGNES ----------------
-linked = linkage(X_scaled, method='ward')
+# AGNES (Bottom-Up) Dendrogram
+linkage_agnes = linkage(X_scaled, method='ward')
+plt.figure()
+dendrogram(linkage_agnes)
+plt.title("Dendrogram - AGNES (Bottom-Up)")
+plt.xlabel("Customers")
+plt.ylabel("Distance")
+plt.show()
 
-plt.figure(figsize=(10, 5))
-dendrogram(linked, orientation='top', distance_sort='descending', show_leaf_counts=True)
-plt.title('Dendrogram - AGNES (Agglomerative)')
-plt.xlabel('Customers')
-plt.ylabel('Distance')
-plt.tight_layout()
-plt.savefig('agnes_dendrogram.png')
-
-agnes = AgglomerativeClustering(n_clusters=4)
+# AGNES Clustering
+agnes = AgglomerativeClustering(n_clusters=4, linkage='ward')
 labels_agnes = agnes.fit_predict(X_scaled)
 
-plt.figure(figsize=(5, 5))
 plt.scatter(X_scaled[:, 0], X_scaled[:, 1], c=labels_agnes, cmap='rainbow')
-plt.title('AGNES Clustering Output')
-plt.xlabel('Annual Income (scaled)')
-plt.ylabel('Spending Score (scaled)')
-plt.grid(True)
-plt.tight_layout()
-plt.savefig('agnes_clusters.png')
+plt.title("Clusters by AGNES")
+plt.xlabel("Annual Income (scaled)")
+plt.ylabel("Spending Score (scaled)")
+plt.show()
 
-# ---------------- Simulated DIANA using Recursive KMeans ----------------
-def recursive_kmeans(X, depth=2):
-    labels = np.zeros(len(X), dtype=int)
-    current_label = 0
-    clusters = [np.arange(len(X))]
+# DIANA (Top-Down, simulated using complete linkage)
+linkage_diana = linkage(X_scaled, method='complete')
+plt.figure()
+dendrogram(linkage_diana)
+plt.title("Dendrogram - DIANA (Top-Down, Simulated)")
+plt.xlabel("Customers")
+plt.ylabel("Distance")
+plt.show()
 
-    for _ in range(depth):
-        new_clusters = []
-        for cluster in clusters:
-            if len(cluster) <= 1:
-                continue
-            kmeans = KMeans(n_clusters=2, random_state=42).fit(X[cluster])
-            for i in [0, 1]:
-                indices = cluster[kmeans.labels_ == i]
-                labels[indices] = current_label
-                new_clusters.append(indices)
-                current_label += 1
-        clusters = new_clusters
-    return labels
+# DIANA Clustering (simulated)
+diana = AgglomerativeClustering(n_clusters=4, linkage='complete')
+labels_diana = diana.fit_predict(X_scaled)
 
-labels_diana = recursive_kmeans(X_scaled, depth=2)
-
-plt.figure(figsize=(5, 5))
 plt.scatter(X_scaled[:, 0], X_scaled[:, 1], c=labels_diana, cmap='rainbow')
-plt.title('DIANA (Simulated) Clustering Output')
-plt.xlabel('Annual Income (scaled)')
-plt.ylabel('Spending Score (scaled)')
-plt.grid(True)
-plt.tight_layout()
-plt.savefig('diana_clusters.png')
+plt.title("Clusters by DIANA (Simulated)")
+plt.xlabel("Annual Income (scaled)")
+plt.ylabel("Spending Score (scaled)")
+plt.show()
 
-# ---------------- Silhouette Scores ----------------
-score_agnes = silhouette_score(X_scaled, labels_agnes)
-score_diana = silhouette_score(X_scaled, labels_diana)
 
-print(f'Silhouette Score - AGNES: {score_agnes:.2f}')
-print(f'Silhouette Score - DIANA (Simulated): {score_diana:.2f}')
+# ---------------------------------------------------------------------------------------------
+
+
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.cluster import AgglomerativeClustering
+from scipy.cluster.hierarchy import dendrogram, linkage
+
+data = {'X': [1, 2, 5, 6, 8, 9, 10, 12], 
+        'Y': [2, 1, 7, 6, 8, 9, 10, 11]}
+df = pd.DataFrame(data)
+
+# AGNES (Bottom-Up)
+linkage_matrix = linkage(df, method='ward')
+plt.figure()
+dendrogram(linkage_matrix)
+plt.title("Dendrogram - AGNES (Bottom-Up)")
+plt.show()
+
+# Agglomerative Clustering
+agnes = AgglomerativeClustering(n_clusters=2)
+labels_agnes = agnes.fit_predict(df)
+
+plt.scatter(df['X'], df['Y'], c=labels_agnes, cmap='rainbow')
+plt.title("Clusters by AGNES")
+plt.show()
+
+# DIANA (Top-Down) - simulated using 'complete' linkage
+linkage_matrix_diana = linkage(df, method='complete')
+plt.figure()
+dendrogram(linkage_matrix_diana)
+plt.title("Dendrogram - DIANA (Top-Down, Simulated)")
+plt.show()
+
+diana = AgglomerativeClustering(n_clusters=2, linkage='complete')
+labels_diana = diana.fit_predict(df)
+
+plt.scatter(df['X'], df['Y'], c=labels_diana, cmap='rainbow')
+plt.title("Clusters by DIANA")
+plt.show()
