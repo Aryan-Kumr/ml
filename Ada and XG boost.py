@@ -16,7 +16,7 @@ xgb = XGBClassifier(use_label_encoder=False, eval_metric='logloss', random_state
 
 ada.fit(X_train, y_train)
 xgb.fit(X_train, y_train)
-s
+
 y_pred_ada = ada.predict(X_test)
 y_pred_xgb = xgb.predict(X_test)
 
