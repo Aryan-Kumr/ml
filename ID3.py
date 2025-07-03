@@ -1,5 +1,6 @@
 import pandas as pd
-from sklearn.tree import DecisionTreeClassifier, export_text
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+import matplotlib.pyplot as plt
 
 data = {
     'Weather': ['Sunny', 'Sunny', 'Overcast', 'Rain', 'Rain', 'Overcast'],
@@ -17,7 +18,7 @@ model = DecisionTreeClassifier(criterion='entropy')
 model.fit(X, y)
 
 print("Decision Tree Rules:\n")
-print(export_text(model, feature_names=list(X.columns)))
+plot_tree(model, feature_names=list(X.columns))
 
 # 5. Predict a new sample: Weather=Rain, Temperature=Mild, Humidity=Low
 sample = pd.DataFrame([{
